@@ -1,2 +1,6 @@
 sim.app
 IMG
+driving_log.csv
+data
+__pycache__
+.ipynb_checkpoints
