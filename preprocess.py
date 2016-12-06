@@ -3,8 +3,6 @@ import os
 import numpy as np
 import pandas as pd
 
-from scipy.misc import imread
-
 IMAGE_COLUMNS = ['center_image', 'left_image', 'right_image']
 CONTROL_COLUMNS = ['steering_angle', 'throttle', 'brake']
 TELEMETRY_COLUMNS = ['speed']
@@ -59,11 +57,4 @@ def smooth_control_inputs(log, tau):
         column_name = 'smooth_%s_%g' % (control_column, tau)
         log[column_name] = np.mean(smooth_stack, 0)
     return log
-
-# TODO: needed? spec says I should use a generator to load these... but it
-# seems to work fine as-is. Maybe once we get more data...
-def load_images(path, log, camera_column):
-    return np.array(
-        log[camera_column].map(
-            lambda basename: imread(os.path.join(path, 'IMG', basename))))
 
