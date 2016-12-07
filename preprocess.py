@@ -3,9 +3,7 @@ import os
 import numpy as np
 import pandas as pd
 
-IMAGE_COLUMNS = ['center_image', 'left_image', 'right_image']
-CONTROL_COLUMNS = ['steering_angle', 'throttle', 'brake']
-TELEMETRY_COLUMNS = ['speed']
+from common import *
 
 def load_driving_log(path):
     """
@@ -16,12 +14,17 @@ def load_driving_log(path):
         header=None,
         names=IMAGE_COLUMNS + CONTROL_COLUMNS + TELEMETRY_COLUMNS)
 
-    # Get rid of the image paths --- we will use our own path.
+    # Get rid of the original image paths. (I've moved the files.)
     log[IMAGE_COLUMNS] = log[IMAGE_COLUMNS].applymap(os.path.basename)
 
     # Find delta t between frames from the image path names for smoothing.
     log['time'] = pd.to_datetime(
         log['center_image'], format='center_%Y_%m_%d_%H_%M_%S_%f.jpg')
+
+    # Add the correct paths, based on the location of the CSV file.
+    path_root = os.path.dirname(path)
+    log[IMAGE_COLUMNS] = log[IMAGE_COLUMNS].applymap(
+        lambda basename: os.path.join(path_root, 'IMG', basename))
 
     return log
 
