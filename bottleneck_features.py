@@ -40,10 +40,10 @@ def run(log, data_dir, batch_size=32):
         for prediction in chunks(X_base, len(IMAGE_COLUMNS)):
             if index % 50 == 0:
                 print('index', index)
-            index += 1
             np.savez(get_bottleneck_pathname(data_dir, index), **{
                 IMAGE_COLUMNS[i]: prediction[i] for i in range(len(prediction))
             })
+            index += 1
 
 if __name__ == '__main__':
     run()
