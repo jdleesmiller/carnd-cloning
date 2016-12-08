@@ -41,7 +41,7 @@ def run(log, data_dir, batch_size=32):
             if index % 50 == 0:
                 print('index', index)
             index += 1
-            np.savez_compressed(get_bottleneck_pathname(data_dir, index), **{
+            np.savez(get_bottleneck_pathname(data_dir, index), **{
                 IMAGE_COLUMNS[i]: prediction[i] for i in range(len(prediction))
             })
 

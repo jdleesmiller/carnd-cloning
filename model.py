@@ -4,14 +4,15 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 
-from scipy.misc import imread
-
 from keras.callbacks import EarlyStopping
 from keras.layers import Input, Flatten, Dense, SpatialDropout2D
 from keras.layers.convolutional import Convolution2D
 from keras.models import Sequential
 from keras.models import model_from_json
 from keras.regularizers import l2
+
+from scipy.misc import imread
+from sklearn.model_selection import train_test_split
 
 from common import *
 
@@ -22,7 +23,7 @@ def generate_data(data_dir, log, indexes, batch_size=32):
         batch_indexes = indexes[start:end]
 
         batch_features = np.array([
-            np.load(get_bottleneck_filename(data_dir, index))['center_image']
+            np.load(get_bottleneck_pathname(data_dir, index))['center_image']
             for index in batch_indexes
         ])
 
@@ -73,13 +74,10 @@ def train(model, data_dir, log,
         samples_per_epoch=len(x_train_indexes),
         nb_epoch=nb_epoch,
         validation_data=validation_generator,
-        nb_val_samples=len(val_indexes),
+        nb_val_samples=len(x_val_indexes),
         callbacks=callbacks)
 
     return model
 
 if __name__ == '__main__':
-    bottleneck_features = np.load(os.path.join(DATA_DIR,
-        get_bottleneck_filename('center_image')))['arr_0']
-    train(bottleneck_features)
-
+    pass
