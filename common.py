@@ -11,5 +11,9 @@ DRIVING_LOG_CSV = 'driving_log.csv'
 DRIVING_LOG_PICKLE = 'driving_log.p'
 BOTTLENECK_PICKLE = 'bottleneck.p'
 
-def get_bottleneck_npy_filename(image_column):
-    return 'bottleneck_%s.npy' % image_column
+BASE_MODEL_JSON_FILE = 'base_model.json'
+BASE_MODEL_WEIGHTS_FILE = 'base_model.h5'
+
+def get_bottleneck_filename(image_column):
+    return 'bottleneck_%s.npz' % image_column
+

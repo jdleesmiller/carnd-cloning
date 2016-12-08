@@ -1,13 +1,11 @@
 import argparse
 import base64
-import json
 
 import numpy as np
 import socketio
 import eventlet
 import eventlet.wsgi
 import time
-
 
 from PIL import Image
 from PIL import ImageOps
@@ -17,11 +15,18 @@ from io import BytesIO
 from keras.models import model_from_json
 from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array
 
+from keras.applications.inception_v3 import preprocess_input
+
+from common import *
+import model
+import model_io
 
 sio = socketio.Server()
 app = Flask(__name__)
-model = None
+top_model = None
 prev_image_array = None
+
+base_model = model_io.load_base_model()
 
 @sio.on('telemetry')
 def telemetry(sid, data):
@@ -35,14 +40,17 @@ def telemetry(sid, data):
     imgString = data["image"]
     image = Image.open(BytesIO(base64.b64decode(imgString)))
     image_array = np.asarray(image)
-    transformed_image_array = image_array[None, :, :, :]
-    # This model currently assumes that the features of the model are just the images. Feel free to change this.
-    steering_angle = float(model.predict(transformed_image_array, batch_size=1))
+    transformed_image_array = image_array[None, :, :, :].astype(np.float32)
+
+    X = preprocess_input(transformed_image_array)
+    base_X = base_model.predict(X)
+    steering_angle = float(model.predict(base_X, batch_size=1))
+
     # The driving model currently just outputs a constant throttle. Feel free to edit this.
     throttle = 0.2
+
     print(steering_angle, throttle)
     send_control(steering_angle, throttle)
-
 
 @sio.on('connect')
 def connect(sid, environ):
@@ -63,7 +71,7 @@ if __name__ == '__main__':
     help='Path to model definition json. Model weights should be on the same path.')
     args = parser.parse_args()
     with open(args.model, 'r') as jfile:
-        model = model_from_json(json.load(jfile))
+        model = model_from_json(jfile.read())
 
     model.compile("adam", "mse")
     weights_file = args.model.replace('json', 'h5')

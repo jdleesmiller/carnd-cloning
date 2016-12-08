@@ -6,11 +6,12 @@ import pickle
 
 import numpy as np
 import pandas as pd
-from keras.applications.inception_v3 import InceptionV3, preprocess_input
+from keras.applications.inception_v3 import preprocess_input
 from keras.layers import Input
 from scipy.misc import imread
 
 from common import *
+import model_io
 
 def generate_data(filenames, batch_size=32):
     start = 0
@@ -36,24 +37,22 @@ def generate_data(filenames, batch_size=32):
         yield (X_batch, y_batch)
 
 def bottleneck(filenames):
-    model = InceptionV3(
-        include_top=False,
-        weights='imagenet',
-        input_tensor=Input(shape=IMAGE_SHAPE))
-
-    return model.predict_generator(generate_data(filenames), filenames.shape[0])
+    base_model = model_io.load_base_model()
+    return base_model.predict_generator(
+        generate_data(filenames), filenames.shape[0])
 
 def run(data_dir):
     input_pathname = os.path.join(data_dir, DRIVING_LOG_PICKLE)
     driving_log = pd.read_pickle(input_pathname)
+    driving_log = driving_log[:3]
 
-    for image_column in IMAGE_COLUMNS:
+    for image_column in IMAGE_COLUMNS[1:2]:
         print('column:', image_column)
         output_pathname = os.path.join(
-                data_dir, get_bottleneck_npy_filename(image_column))
+                data_dir, get_bottleneck_filename(image_column))
 
         result = bottleneck(driving_log[image_column])
-        np.save(output_pathname, result)
+        np.savez_compressed(output_pathname, result)
 
 if __name__ == '__main__':
     run()
