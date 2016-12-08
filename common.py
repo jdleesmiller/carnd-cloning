@@ -16,6 +16,9 @@ BOTTLENECK_PICKLE = 'bottleneck.p'
 BASE_MODEL_JSON_FILE = 'base_model.json'
 BASE_MODEL_WEIGHTS_FILE = 'base_model.h5'
 
-def get_bottleneck_filename(index):
-    return os.path.join('bottleneck', '%04d.npz' % index)
+def get_bottleneck_folder(data_dir):
+    return os.path.join(data_dir, 'bottleneck')
+
+def get_bottleneck_pathname(data_dir, index):
+    return os.path.join(get_bottleneck_folder(data_dir), '%04d.npz' % index)
 

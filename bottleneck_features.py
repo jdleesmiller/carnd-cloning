@@ -20,7 +20,7 @@ def chunks(itr, size):
 
 def run(log, data_dir, batch_size=32):
     base_model = model_io.load_base_model()
-    os.makedirs(os.path.join(data_dir, 'bottleneck'), exist_ok=True)
+    os.makedirs(get_bottleneck_folder(data_dir), exist_ok=True)
 
     index = 0
     for batch in chunks(log, batch_size):
@@ -40,11 +40,8 @@ def run(log, data_dir, batch_size=32):
         for prediction in chunks(X_base, len(IMAGE_COLUMNS)):
             if index % 50 == 0:
                 print('index', index)
-
-            output_pathname = os.path.join(
-                data_dir, get_bottleneck_filename(index))
             index += 1
-            np.savez_compressed(output_pathname, **{
+            np.savez_compressed(get_bottleneck_pathname(data_dir, index), **{
                 IMAGE_COLUMNS[i]: prediction[i] for i in range(len(prediction))
             })
 
