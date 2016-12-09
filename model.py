@@ -18,13 +18,18 @@ from common import *
 
 def generate_data(data_dir, log, indexes, batch_size=32):
     start = 0
+    # I think this uses weakrefs, so we can let python cache the files.
+    bottleneck_files = [
+        np.load(get_bottleneck_pathname(data_dir, index))
+        for index in indexes
+    ]
     while True:
         end = start + batch_size
         batch_indexes = indexes[start:end]
 
         batch_features = np.array([
-            np.load(get_bottleneck_pathname(data_dir, index))['center_image']
-            for index in batch_indexes
+            bottleneck_file['center_image']
+            for bottleneck_file in bottleneck_files[batch_indexes]
         ])
 
         batch_labels = log['smooth_steering_angle_1'].values[batch_indexes]

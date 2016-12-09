@@ -2,6 +2,7 @@ import os
 
 import numpy as np
 import pandas as pd
+from scipy.ndimage.filters import gaussian_filter1d
 
 from common import *
 
@@ -61,3 +62,13 @@ def smooth_control_inputs(log, tau):
         log[column_name] = np.mean(smooth_stack, 0)
     return log
 
+def smooth_control_inputs_gaussian(log, sigma):
+    """
+    Bind smoothed control inputs to the driving log using a Gaussian filter.
+    This more closely preserves the mean than the exponential smoothing (but
+    the outputs have so far been not that different).
+    """
+    for control_column in CONTROL_COLUMNS:
+        log['smooth_%s_gaussian_%g' % (control_column, sigma)] = \
+            gaussian_filter1d(log[control_column], sigma)
+    return log
