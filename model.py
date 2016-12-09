@@ -16,23 +16,23 @@ from sklearn.model_selection import train_test_split
 
 from common import *
 
-def generate_data(data_dir, log, indexes, batch_size=32):
+def generate_data(log, indexes,
+        label_column='smooth_steering_angle_1',
+        batch_size=32):
+    # I think this uses weakrefs, so we can cache the files here.
+    bottleneck_files = log['bottleneck_features'].map(
+        lambda pathname: np.load(pathname)
+    ).values
     start = 0
-    # I think this uses weakrefs, so we can let python cache the files.
-    bottleneck_files = [
-        np.load(get_bottleneck_pathname(data_dir, index))
-        for index in indexes
-    ]
     while True:
         end = start + batch_size
         batch_indexes = indexes[start:end]
 
         batch_features = np.array([
-            bottleneck_file['center_image']
-            for bottleneck_file in bottleneck_files[batch_indexes]
+            bottleneck_files[index]['center_image'] for index in batch_indexes
         ])
 
-        batch_labels = log['smooth_steering_angle_1'].values[batch_indexes]
+        batch_labels = log[label_column].values[batch_indexes]
 
         start = end
         if start >= len(indexes):
@@ -60,7 +60,7 @@ def build(input_shape):
 
     return model
 
-def train(model, data_dir, log,
+def train(model, log,
         test_size=0.2,
         nb_epoch=1,
         batch_size=32):
@@ -68,11 +68,11 @@ def train(model, data_dir, log,
     x_train_indexes, x_val_indexes = \
         split_training_set(log, test_size=test_size)
 
-    callbacks = [EarlyStopping(patience=2)]
+    callbacks = [EarlyStopping(patience=1)]
     training_generator = \
-        generate_data(data_dir, log, x_train_indexes, batch_size=batch_size)
+        generate_data(log, x_train_indexes, batch_size=batch_size)
     validation_generator = \
-        generate_data(data_dir, log, x_val_indexes, batch_size=batch_size)
+        generate_data(log, x_val_indexes, batch_size=batch_size)
 
     model.fit_generator(
         training_generator,

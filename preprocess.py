@@ -5,6 +5,7 @@ import pandas as pd
 from scipy.ndimage.filters import gaussian_filter1d
 
 from common import *
+import bottleneck_features
 
 def load_driving_log(path):
     """
@@ -71,4 +72,15 @@ def smooth_control_inputs_gaussian(log, sigma):
     for control_column in CONTROL_COLUMNS:
         log['smooth_%s_gaussian_%g' % (control_column, sigma)] = \
             gaussian_filter1d(log[control_column], sigma)
+    return log
+
+def run(data_dir, smoothing_tau=1, smoothing_sigma=5):
+    """
+    Load and smooth the driving log in the given directory and generate
+    bottleneck features.
+    """
+    log = load_driving_log(os.path.join(data_dir, DRIVING_LOG_CSV))
+    log = smooth_control_inputs(log, smoothing_tau)
+    log = smooth_control_inputs_gaussian(log, smoothing_sigma)
+    log = bottleneck_features.run(log, data_dir)
     return log
