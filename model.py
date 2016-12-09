@@ -30,7 +30,7 @@ def make_features_and_labels_for_all_cams(
         side_camera_bias):
 
     center_features, center_labels = make_features_and_labels_for_center_cam(
-        log, bottleneck_files, batch_indexes)
+        log, bottleneck_files, batch_indexes, label_column)
 
     left_features = np.array([
         bottleneck_files[index]['left_image']
@@ -95,6 +95,7 @@ def build(input_shape):
     return model
 
 def train(model, log,
+        side_camera_bias=None,
         test_size=0.2,
         nb_epoch=1,
         batch_size=32):
@@ -104,16 +105,24 @@ def train(model, log,
 
     callbacks = [EarlyStopping(patience=1)]
     training_generator = \
-        generate_data(log, x_train_indexes, batch_size=batch_size)
+        generate_data(log, x_train_indexes, batch_size=batch_size,
+            side_camera_bias=side_camera_bias)
     validation_generator = \
-        generate_data(log, x_val_indexes, batch_size=batch_size)
+        generate_data(log, x_val_indexes, batch_size=batch_size,
+            side_camera_bias=side_camera_bias)
+
+    samples_per_epoch = len(x_train_indexes)
+    nb_val_samples = len(x_val_indexes)
+    if side_camera_bias is not None:
+        samples_per_epoch *= 3
+        nb_val_samples *= 3
 
     model.fit_generator(
         training_generator,
-        samples_per_epoch=len(x_train_indexes),
+        samples_per_epoch=samples_per_epoch,
         nb_epoch=nb_epoch,
         validation_data=validation_generator,
-        nb_val_samples=len(x_val_indexes),
+        nb_val_samples=nb_val_samples,
         callbacks=callbacks)
 
     return model
