@@ -68,14 +68,14 @@ def split_training_set(log, test_size=0.2, random_state=42):
         test_size=test_size,
         random_state=random_state)
 
-def build(input_shape):
+def build(input_shape, nb_filter=64, l2_weight=0.01):
     np.random.seed(42)
 
     model = Sequential()
-    model.add(Convolution2D(nb_filter=64, nb_row=1, nb_col=1,
+    model.add(Convolution2D(nb_filter=nb_filter, nb_row=1, nb_col=1,
         input_shape=input_shape))
     model.add(Flatten())
-    model.add(Dense(1, W_regularizer=l2(0.01)))
+    model.add(Dense(1, W_regularizer=l2(l2_weight)))
 
     model.compile(optimizer='adam', loss='mean_squared_error')
     model.summary()
@@ -95,7 +95,7 @@ def train(model, log,
     log_train = log.iloc[x_train_indexes]
     log_val = log.iloc[x_val_indexes]
 
-    callbacks = [EarlyStopping(patience=1)]
+    callbacks = [EarlyStopping(patience=2)]
     training_generator = \
         generate_data(log_train, label_column=label_column,
             batch_size=batch_size, side_camera_bias=side_camera_bias)
@@ -109,7 +109,7 @@ def train(model, log,
         samples_per_epoch *= 3
         nb_val_samples *= 3
 
-    model.fit_generator(
+    history = model.fit_generator(
         training_generator,
         samples_per_epoch=samples_per_epoch,
         nb_epoch=nb_epoch,
@@ -117,7 +117,7 @@ def train(model, log,
         nb_val_samples=nb_val_samples,
         callbacks=callbacks)
 
-    return model
+    return history
 
 if __name__ == '__main__':
     pass

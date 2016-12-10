@@ -5,3 +5,4 @@ driving_log.csv
 data
 __pycache__
 .ipynb_checkpoints
+grid_model*
