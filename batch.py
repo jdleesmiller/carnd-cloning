@@ -55,7 +55,7 @@ def make_batches(folder, log, batch_size, label_column, side_camera_bias):
         batch = log.iloc[start:end]
         nb_samples += len(batch)
 
-        features, labels = make_features(batch, label_column, side_camera_bias)
+        features, labels = make_batch(batch, label_column, side_camera_bias)
 
         batch_pathname = os.path.join(folder, '%04d.npz' % start)
         np.savez(batch_pathname, features=features, labels=labels)
