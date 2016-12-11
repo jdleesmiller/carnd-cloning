@@ -28,6 +28,20 @@ def make_side_camera_data(files, side_camera_bias,
 
     return features, labels
 
+def make_batch(batch, label_column, side_camera_bias):
+    batch_files = load_bottleneck_files(batch)
+
+    features = load_bottleneck_features(batch_files, 'center_image')
+    labels = batch[label_column].values
+    if side_camera_bias is not None:
+        features, labels = make_side_camera_data(
+            batch_files, side_camera_bias, features, labels)
+
+    for batch_file in batch_files:
+        batch_file.close()
+
+    return features, labels
+
 def make_batches(folder, log, batch_size, label_column, side_camera_bias):
     """
     Precompute batches. This means we can't shuffle between epochs,
@@ -41,16 +55,7 @@ def make_batches(folder, log, batch_size, label_column, side_camera_bias):
         batch = log.iloc[start:end]
         nb_samples += len(batch)
 
-        batch_files = load_bottleneck_files(batch)
-
-        features = load_bottleneck_features(batch_files, 'center_image')
-        labels = batch[label_column].values
-        if side_camera_bias is not None:
-            features, labels = make_side_camera_data(
-                batch_files, side_camera_bias, features, labels)
-
-        for batch_file in batch_files:
-            batch_file.close()
+        features, labels = make_features(batch, label_column, side_camera_bias)
 
         batch_pathname = os.path.join(folder, '%04d.npz' % start)
         np.savez(batch_pathname, features=features, labels=labels)
