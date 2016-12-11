@@ -35,9 +35,12 @@ def make_batches(folder, log, batch_size, label_column, side_camera_bias):
     individual files. (We do still shuffle at the start.)
     """
     batch_pathnames = []
+    nb_samples = 0
     for start in range(0, len(log), batch_size):
         end = start + batch_size
         batch = log.iloc[start:end]
+        nb_samples += len(batch)
+
         batch_files = load_bottleneck_files(batch)
 
         features = load_bottleneck_features(batch_files, 'center_image')
@@ -53,13 +56,25 @@ def make_batches(folder, log, batch_size, label_column, side_camera_bias):
         np.savez(batch_pathname, features=features, labels=labels)
         batch_pathnames.append(batch_pathname)
 
-    return batch_pathnames
+    return nb_samples, batch_pathnames
 
 def split_training_set(log, test_size, random_state):
     return train_test_split(
         np.arange(len(log)),
         test_size=test_size,
         random_state=random_state)
+
+def load_existing_batches(folder):
+    pathnames = [
+        os.path.join(folder, filename) for filename in os.listdir(folder)
+    ]
+
+    nb_samples = 0
+    for pathname in pathnames:
+        with np.load(pathname) as batch:
+            nb_samples += len(batch['labels'])
+
+    return nb_samples, pathnames
 
 def make_train_val_batches(log, key):
     folder = os.path.join('batches', make_filestem('batch', key))
@@ -68,19 +83,15 @@ def make_train_val_batches(log, key):
 
     if os.path.isdir(folder_train) and os.path.isdir(folder_val):
         print(folder, 'for batches exists')
-        batches_train = [
-            os.path.join(folder_train, filename)
-            for filename in os.listdir(folder_train)]
-        batches_val = [
-            os.path.join(folder_val, filename)
-            for filename in os.listdir(folder_val)]
+        nb_train, batches_train = load_existing_batches(folder_train)
+        nb_val, batches_val = load_existing_batches(folder_val)
 
-        # Sanity check.
-        num_batches = len(batches_train) + len(batches_val)
-        expected_num_batches = len(log) / key['batch_size']
-        assert abs(num_batches - expected_num_batches) < 1
+        if key['side_camera_bias'] is None:
+            assert nb_val + nb_train == len(log)
+        else:
+            assert nb_val + nb_train == 3 * len(log)
 
-        return batches_train, batches_val
+        return nb_train, batches_train, nb_val, batches_val
 
     os.makedirs(folder_train, exist_ok=True)
     os.makedirs(folder_val, exist_ok=True)
@@ -93,10 +104,10 @@ def make_train_val_batches(log, key):
     log_train = log.iloc[x_train_indexes]
     log_val = log.iloc[x_val_indexes]
 
-    batches_train = make_batches(folder_train, log_train, key['batch_size'],
-        key['label_column'], key['side_camera_bias'])
-    batches_val = make_batches(folder_val, log_val, key['batch_size'],
-        key['label_column'], key['side_camera_bias'])
+    nb_train, batches_train = make_batches(folder_train, log_train,
+        key['batch_size'], key['label_column'], key['side_camera_bias'])
+    nb_val, batches_val = make_batches(folder_val, log_val,
+        key['batch_size'], key['label_column'], key['side_camera_bias'])
 
-    return batches_train, batches_val
+    return nb_train, batches_train, nb_val, batches_val
 
