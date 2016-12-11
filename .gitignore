@@ -3,6 +3,7 @@ Default Linux desktop Universal*
 IMG
 driving_log.csv
 data
+batches
 models
 __pycache__
 .ipynb_checkpoints

@@ -16,3 +16,11 @@ BOTTLENECK_PICKLE = 'bottleneck.p'
 def base_model_stem(cut_index):
     return 'base_model_%d' % cut_index
 
+def make_filestem(prefix, params):
+    stem = prefix
+    for param in sorted(params):
+        value = params[param]
+        if value is None: value = 'None'
+        stem += '.' + param + '-' + str(value)
+    return stem
+
