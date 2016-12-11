@@ -9,12 +9,16 @@ from keras.layers import Input, Flatten, Dense, Dropout
 from keras.layers.convolutional import Convolution2D
 from keras.models import Sequential
 from keras.models import model_from_json
+from keras.initializations import normal
 from keras.regularizers import l2
 
 from scipy.misc import imread
 from sklearn.model_selection import train_test_split
 
 from common import *
+
+def small_normal(shape, name=None):
+    return normal(shape, scale=0.1, name=name)
 
 def load_bottleneck_files(log):
     return log['bottleneck_features'].map(
@@ -76,8 +80,8 @@ def build(input_shape, nb_filter, nb_hidden, l2_weight, optimizer):
     model.add(Convolution2D(nb_filter=nb_filter, nb_row=1, nb_col=1,
         input_shape=input_shape))
     model.add(Flatten())
-    model.add(Dense(nb_hidden, activation='tanh', W_regularizer=l2(l2_weight)))
-    model.add(Dense(1, W_regularizer=l2(l2_weight)))
+    model.add(Dense(nb_hidden, activation='tanh', init=small_normal, W_regularizer=l2(l2_weight)))
+    model.add(Dense(1, init=small_normal, W_regularizer=l2(l2_weight)))
 
     model.compile(optimizer=optimizer, loss='mean_absolute_error')
     model.summary()
