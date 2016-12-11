@@ -28,7 +28,7 @@ prev_image_array = None
 weights_file = None
 weights_file_mtime = None
 
-base_model = model_io.load_base_model(28)
+base_model = model_io.load_base_model(44)
 
 def check_for_weights_update():
     global weights_file_mtime
@@ -78,7 +78,7 @@ def telemetry(sid, data):
     target_speed = 1 + 12 * (1 - abs(steering_angle))
 
     # Don't accelerate too much.
-    max_throttle = 0.4
+    max_throttle = 0.6
     min_throttle = -0.2
 
     # Choose new throttle based on target speed. I am still not entirely clear
