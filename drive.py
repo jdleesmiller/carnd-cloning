@@ -25,17 +25,37 @@ sio = socketio.Server()
 app = Flask(__name__)
 top_model = None
 prev_image_array = None
+weights_file = None
+weights_file_mtime = None
 
 base_model = model_io.load_base_model()
 
+def check_for_weights_update():
+    global weights_file_mtime
+    """
+    If the weights file changes, reload it without having to tear down the
+    server.
+    """
+    latest_mtime = os.stat(weights_file).st_mtime
+    if weights_file_mtime is None:
+        weights_file_mtime = latest_mtime
+        return
+
+    if weights_file_mtime == latest_mtime:
+        return
+
+    print('reloading weights')
+    model.load_weights(weights_file)
+    weights_file_mtime = latest_mtime
+
 @sio.on('telemetry')
 def telemetry(sid, data):
-    # The current steering angle of the car
-    steering_angle = data["steering_angle"]
+    # The current steering angle of the car (in degrees)
+    steering_angle = float(data["steering_angle"]) / 25.0
     # The current throttle of the car
-    throttle = data["throttle"]
+    throttle = float(data["throttle"])
     # The current speed of the car
-    speed = data["speed"]
+    speed = float(data["speed"])
     # The current image from the center camera of the car
     imgString = data["image"]
     image = Image.open(BytesIO(base64.b64decode(imgString)))
@@ -44,19 +64,42 @@ def telemetry(sid, data):
 
     X = preprocess_input(transformed_image_array)
     base_X = base_model.predict(X)
-    steering_angle = float(model.predict(base_X, batch_size=1))
+    new_steering_angle = float(model.predict(base_X, batch_size=1))
+    if new_steering_angle < -1: new_steering_angle = -1
+    if new_steering_angle > 1: new_steering_angle = 1
 
-    # The driving model currently just outputs a constant throttle. Feel free to edit this.
-    throttle = 0.1
+    # Smooth the steering angle. If using smoothing in the data, then alpha can
+    # be zero. Even with unsmoothed data, it seems to need to be fairly small
+    # anyway, in order to turn sharply enough.
+    alpha = 0
+    steering_angle = alpha * steering_angle + (1 - alpha) * new_steering_angle
 
-    print(steering_angle, throttle)
+    # Don't go too fast. If we're turning, slow down a bit.
+    target_speed = 1 + 12 * (1 - abs(steering_angle))
+
+    # Don't accelerate too much.
+    max_throttle = 0.4
+    min_throttle = -0.2
+
+    # Choose new throttle based on target speed. I am still not entirely clear
+    # on the units for throttle, so this factor is just empirical.
+    new_throttle = (target_speed - speed) * 0.1
+    if new_throttle < min_throttle: new_throttle = min_throttle
+    if new_throttle > max_throttle: new_throttle = max_throttle
+
+    # Update throttle with smoothing. Again empirical.
+    beta = 0.9
+    throttle = beta * throttle + (1 - beta) * new_throttle
+
+    print('sa: %.3f\tnew sa: %.3f\tthrottle=%.3f\tnew throttle=%.3f' % (
+        steering_angle, new_steering_angle, throttle, new_throttle))
     send_control(steering_angle, throttle)
 
 @sio.on('connect')
 def connect(sid, environ):
     print("connect ", sid)
+    check_for_weights_update()
     send_control(0, 0)
-
 
 def send_control(steering_angle, throttle):
     sio.emit("steer", data={
