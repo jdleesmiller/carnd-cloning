@@ -28,6 +28,9 @@ def load_driving_log(path):
     log[IMAGE_COLUMNS] = log[IMAGE_COLUMNS].applymap(
         lambda basename: os.path.join(path_root, 'IMG', basename))
 
+    # Add the path as a tag.
+    log['dataset'] = os.path.basename(path_root)
+
     return log
 
 def smooth(values, dt, tau):

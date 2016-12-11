@@ -4,8 +4,8 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 
-from keras.callbacks import EarlyStopping
-from keras.layers import Input, Flatten, Dense, SpatialDropout2D
+from keras.callbacks import EarlyStopping, ModelCheckpoint
+from keras.layers import Input, Flatten, Dense, Dropout
 from keras.layers.convolutional import Convolution2D
 from keras.models import Sequential
 from keras.models import model_from_json
@@ -41,7 +41,7 @@ def make_side_camera_data(files, side_camera_bias,
 def generate_data(log,
         label_column='smooth_steering_angle_1',
         side_camera_bias=None,
-        batch_size=32):
+        batch_size=64):
     start = 0
     while True:
         end = start + batch_size
@@ -58,6 +58,9 @@ def generate_data(log,
             yield make_side_camera_data(
                 batch_files, side_camera_bias, center_features, center_labels)
 
+        for batch_file in batch_files:
+            batch_file.close()
+
         start = end
         if start >= len(log):
             start = 0
@@ -68,26 +71,22 @@ def split_training_set(log, test_size=0.2, random_state=42):
         test_size=test_size,
         random_state=random_state)
 
-def build(input_shape, nb_filter=64, l2_weight=0.01):
-    np.random.seed(42)
-
+def build(input_shape, nb_filter, nb_hidden, l2_weight, optimizer):
     model = Sequential()
     model.add(Convolution2D(nb_filter=nb_filter, nb_row=1, nb_col=1,
         input_shape=input_shape))
     model.add(Flatten())
+    model.add(Dense(nb_hidden, activation='tanh', W_regularizer=l2(l2_weight)))
     model.add(Dense(1, W_regularizer=l2(l2_weight)))
 
-    model.compile(optimizer='adam', loss='mean_squared_error')
+    model.compile(optimizer=optimizer, loss='mean_absolute_error')
     model.summary()
 
     return model
 
-def train(model, log,
-        label_column='smooth_steering_angle_1',
+def train(model, log, label_column, test_size, nb_epoch, batch_size,
         side_camera_bias=None,
-        test_size=0.2,
-        nb_epoch=1,
-        batch_size=32):
+        save_stem=None):
 
     x_train_indexes, x_val_indexes = \
         split_training_set(log, test_size=test_size)
@@ -96,6 +95,12 @@ def train(model, log,
     log_val = log.iloc[x_val_indexes]
 
     callbacks = [EarlyStopping(patience=2)]
+    if save_stem is not None:
+        with open(save_stem + '.json', 'w') as model_file:
+            model_file.write(model.to_json())
+        callbacks.append(ModelCheckpoint(
+            save_stem + '.h5', save_best_only=True, save_weights_only=True))
+
     training_generator = \
         generate_data(log_train, label_column=label_column,
             batch_size=batch_size, side_camera_bias=side_camera_bias)
