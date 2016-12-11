@@ -28,7 +28,7 @@ prev_image_array = None
 weights_file = None
 weights_file_mtime = None
 
-base_model = model_io.load_base_model()
+base_model = model_io.load_base_model(28)
 
 def check_for_weights_update():
     global weights_file_mtime

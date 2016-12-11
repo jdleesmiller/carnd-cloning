@@ -77,7 +77,7 @@ def smooth_control_inputs_gaussian(log, sigma):
             gaussian_filter1d(log[control_column], sigma)
     return log
 
-def run(data_dir):
+def run(data_dir, cut_index):
     """
     Load and smooth the driving log in the given directory and generate
     bottleneck features.
@@ -86,5 +86,5 @@ def run(data_dir):
     log = smooth_control_inputs(log, 1)
     log = smooth_control_inputs_gaussian(log, 3)
     log = smooth_control_inputs_gaussian(log, 5)
-    log = bottleneck_features.run(log, data_dir)
+    log = bottleneck_features.run(log, data_dir, cut_index)
     return log

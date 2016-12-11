@@ -10,32 +10,37 @@ from scipy.misc import imread
 from common import *
 import model_io
 
-# load a batch of rows
-# run predictions for each of the cameras
-# save an npz file for each frame with the bottleneck results
+def get_bottleneck_folder(data_dir, cut_index):
+    return os.path.join(data_dir, 'bottleneck_%d' % cut_index)
+
+def get_bottleneck_pathname(data_dir, cut_index, index):
+    return os.path.join(
+        get_bottleneck_folder(data_dir, cut_index), '%04d.npz' % index)
 
 def chunks(itr, size):
     for i in range(0, len(itr), size):
         yield itr[i:(i+size)]
 
-def bind_bottleneck_features(log, data_dir):
+def bind_bottleneck_features(log, data_dir, cut_index):
     """
     If we have lost the bottleneck feature mapping for a log, just rebuild it
     rather than re-bottlenecking all the data.
     """
     log['bottleneck_features'] = [
-        get_bottleneck_pathname(data_dir, index) for index in range(len(log))
+        get_bottleneck_pathname(data_dir, cut_index, index)
+        for index in range(len(log))
     ]
     return log
 
-def run(log, data_dir, batch_size=32):
-    if os.path.isdir(get_bottleneck_folder(data_dir)):
-        print('Bottleneck folder exists in', data_dir, '; just binding.')
-        return bind_bottleneck_features(log, data_dir)
+def run(log, data_dir, cut_index, batch_size=32):
+    bottleneck_folder = get_bottleneck_folder(data_dir, cut_index)
+    if os.path.isdir(bottleneck_folder):
+        print(bottleneck_folder, 'exists; just binding.')
+        return bind_bottleneck_features(log, data_dir, cut_index)
 
-    os.makedirs(get_bottleneck_folder(data_dir), exist_ok=True)
+    os.makedirs(bottleneck_folder, exist_ok=True)
 
-    base_model = model_io.load_base_model()
+    base_model = model_io.load_base_model(cut_index)
 
     index = 0
     log['bottleneck_features'] = ''
@@ -56,7 +61,8 @@ def run(log, data_dir, batch_size=32):
         for prediction in chunks(X_base, len(IMAGE_COLUMNS)):
             if index % 50 == 0:
                 print('index', index)
-            output_pathname = get_bottleneck_pathname(data_dir, index)
+            output_pathname = get_bottleneck_pathname(
+                data_dir, cut_index, index)
             np.savez(output_pathname, **{
                 IMAGE_COLUMNS[i]: prediction[i] for i in range(len(prediction))
             })

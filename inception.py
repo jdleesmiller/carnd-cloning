@@ -4,7 +4,7 @@ from keras.applications.inception_v3 import InceptionV3
 
 from common import *
 
-def make_cut_model(cut=28):
+def make_cut_model(cut_index):
     """
     Return the first part of the Inception model. Running the whole inception
     model is too slow for real time use on my laptop, and I imagine that the
@@ -23,4 +23,6 @@ def make_cut_model(cut=28):
         include_top=False,
         weights='imagenet',
         input_tensor=Input(shape=IMAGE_SHAPE))
-    return Model(input=inception.input, output=inception.layers[cut].output)
+    return Model(
+        input=inception.input,
+        output=inception.layers[cut_index].output)

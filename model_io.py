@@ -13,6 +13,8 @@ def load_model(json_file, weights_file):
     model.load_weights(weights_file)
     return model
 
-def load_base_model():
-    return load_model(BASE_MODEL_JSON_FILE, BASE_MODEL_WEIGHTS_FILE)
+def load_base_model(cut_index):
+    return load_model(
+        base_model_stem(cut_index) + '.json',
+        base_model_stem(cut_index) + '.h5')
 

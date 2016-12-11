@@ -13,12 +13,6 @@ DRIVING_LOG_CSV = 'driving_log.csv'
 DRIVING_LOG_PICKLE = 'driving_log.p'
 BOTTLENECK_PICKLE = 'bottleneck.p'
 
-BASE_MODEL_JSON_FILE = 'base_model.json'
-BASE_MODEL_WEIGHTS_FILE = 'base_model.h5'
-
-def get_bottleneck_folder(data_dir):
-    return os.path.join(data_dir, 'bottleneck')
-
-def get_bottleneck_pathname(data_dir, index):
-    return os.path.join(get_bottleneck_folder(data_dir), '%04d.npz' % index)
+def base_model_stem(cut_index):
+    return 'base_model_%d' % cut_index
 
