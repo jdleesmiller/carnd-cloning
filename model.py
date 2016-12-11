@@ -9,8 +9,8 @@ from keras.layers import Input, Flatten, Dense, Dropout
 from keras.layers.convolutional import Convolution2D
 from keras.models import Sequential
 from keras.models import model_from_json
-from keras.initializations import normal
 from keras.regularizers import l2
+import keras.initializations
 
 from scipy.misc import imread
 from sklearn.model_selection import train_test_split
@@ -18,7 +18,10 @@ from sklearn.model_selection import train_test_split
 from common import *
 
 def small_normal(shape, name=None):
-    return normal(shape, scale=0.1, name=name)
+    return keras.initializations.normal(shape, scale=0.1, name=name)
+
+# So we can use model_from_json.
+setattr(keras.initializations, 'small_normal', small_normal)
 
 def load_bottleneck_files(log):
     return log['bottleneck_features'].map(
