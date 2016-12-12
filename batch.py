@@ -16,6 +16,11 @@ def load_bottleneck_features(files, column):
 
 def make_side_camera_data(files, side_camera_bias,
         center_features, center_labels):
+    """
+    Generate additional training / validation data by taking the left and right
+    camera images and slightly biasing the steering angle. Empirically, a bias
+    of about 1.5 degrees (0.06 in model units) seems to work well.
+    """
 
     left_features = load_bottleneck_features(files, 'left_image')
     left_labels = center_labels + side_camera_bias
@@ -29,6 +34,9 @@ def make_side_camera_data(files, side_camera_bias,
     return features, labels
 
 def make_batch(batch, label_column, side_camera_bias):
+    """
+    Save a complete batch of data for training / validation.
+    """
     batch_files = load_bottleneck_files(batch)
 
     features = load_bottleneck_features(batch_files, 'center_image')
@@ -70,6 +78,10 @@ def split_training_set(log, test_size, random_state):
         random_state=random_state)
 
 def load_existing_batches(folder):
+    """
+    If we have already generated batches, just reload them (and find the 
+    length so we can check that it matches our current dataset).
+    """
     pathnames = [
         os.path.join(folder, filename) for filename in os.listdir(folder)
     ]
@@ -82,6 +94,11 @@ def load_existing_batches(folder):
     return nb_samples, pathnames
 
 def make_train_val_batches(log, key):
+    """
+    Split the data into training and validation sets (after shuffling). Split
+    these into batches that are small enough to fit in memory and save them for
+    loading at training time.
+    """
     folder = os.path.join('batches', make_filestem('batch', key))
     folder_train = os.path.join(folder, 'train')
     folder_val = os.path.join(folder, 'val')

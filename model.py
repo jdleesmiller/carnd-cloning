@@ -16,10 +16,13 @@ from common import *
 def small_normal(shape, name=None):
     return keras.initializations.normal(shape, scale=0.1, name=name)
 
-# So we can use model_from_json.
+# So we can use model_from_json on a model that uses this init.
 setattr(keras.initializations, 'small_normal', small_normal)
 
 def build(input_shape, nb_filter, nb_hidden, l2_weight, optimizer):
+    """
+    Build the model.
+    """
     model = Sequential()
     model.add(Convolution2D(nb_filter=nb_filter, nb_row=1, nb_col=1,
         input_shape=input_shape))
@@ -33,6 +36,11 @@ def build(input_shape, nb_filter, nb_hidden, l2_weight, optimizer):
     return model
 
 def generate_data(batch_files):
+    """
+    Generate data in batches using a Python generator (`yield`).
+    The batch files are pre-generated (after shuffling) in batch.py, so there
+    is not much to do here.
+    """
     while True:
         for batch_file in batch_files:
             with np.load(batch_file) as batch:
@@ -41,6 +49,11 @@ def generate_data(batch_files):
 def train(model, nb_epoch, patience,
         nb_train, batch_files_train, nb_val, batch_files_val,
         save_stem=None):
+    """
+    Train the model.
+    Stop training when validation error increases and save the model and the
+    weights with the best validation error.
+    """
 
     callbacks = [EarlyStopping(patience=patience)]
     if save_stem is not None:
@@ -61,6 +74,3 @@ def train(model, nb_epoch, patience,
         callbacks=callbacks)
 
     return history
-
-if __name__ == '__main__':
-    pass
