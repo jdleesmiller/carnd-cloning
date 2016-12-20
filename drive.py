@@ -50,6 +50,8 @@ def check_for_weights_update():
 
 @sio.on('telemetry')
 def telemetry(sid, data):
+    start_time = time.time()
+
     # The current steering angle of the car (in degrees)
     steering_angle = float(data["steering_angle"]) / 25.0
     # The current throttle of the car
@@ -64,6 +66,8 @@ def telemetry(sid, data):
 
     X = preprocess_input(transformed_image_array)
     base_X = base_model.predict(X)
+    base_time = time.time()
+
     new_steering_angle = float(model.predict(base_X, batch_size=1))
     if new_steering_angle < -1: new_steering_angle = -1
     if new_steering_angle > 1: new_steering_angle = 1
@@ -91,8 +95,10 @@ def telemetry(sid, data):
     beta = 0.9
     throttle = beta * throttle + (1 - beta) * new_throttle
 
-    print('sa: %.3f\tnew sa: %.3f\tthrottle=%.3f\tnew throttle=%.3f' % (
-        steering_angle, new_steering_angle, throttle, new_throttle))
+    dt_base = base_time - start_time
+    dt = time.time() - start_time
+    print('dt: %.3fs\tdt_base: %.3fs\tsa: %.3f\tthrottle=%.3f\tnew throttle=%.3f' % (
+        dt, dt_base, steering_angle, throttle, new_throttle))
     send_control(steering_angle, throttle)
 
 @sio.on('connect')

@@ -7,13 +7,13 @@ from scipy.ndimage.filters import gaussian_filter1d
 from common import *
 import bottleneck_features
 
-def load_driving_log(path):
+def load_driving_log(path, header):
     """
     Read in the driving log CSV and do some basic transforms.
     """
     log = pd.read_csv(
         path,
-        header=None,
+        header=header,
         names=IMAGE_COLUMNS + CONTROL_COLUMNS + TELEMETRY_COLUMNS)
 
     # Get rid of the original image paths. (I've moved the files.)
@@ -77,14 +77,22 @@ def smooth_control_inputs_gaussian(log, sigma):
             gaussian_filter1d(log[control_column], sigma)
     return log
 
-def run(data_dir, cut_index):
+def run(data_dir, cut_index, header=None, smooth=True):
     """
     Load and smooth the driving log in the given directory and generate
     bottleneck features.
     """
-    log = load_driving_log(os.path.join(data_dir, DRIVING_LOG_CSV))
-    log = smooth_control_inputs(log, 1)
-    log = smooth_control_inputs_gaussian(log, 3)
-    log = smooth_control_inputs_gaussian(log, 5)
+    log = load_driving_log(os.path.join(data_dir, DRIVING_LOG_CSV), header)
+    if smooth:
+        log = smooth_control_inputs(log, 1)
+        log = smooth_control_inputs_gaussian(log, 3)
+        log = smooth_control_inputs_gaussian(log, 5)
+    else:
+        # The udacity data appears to be pretty smooth already, so just copy
+        # it over without smoothing.
+        log['smooth_steering_angle_1'] = log['steering_angle']
+        log['smooth_steering_angle_gaussian_3'] = log['steering_angle']
+        log['smooth_steering_angle_gaussian_5'] = log['steering_angle']
+
     log = bottleneck_features.run(log, data_dir, cut_index)
     return log
