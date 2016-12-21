@@ -18,6 +18,8 @@ def make_cut_model(cut_index):
     70 mixed3
     92 mixed4
     114 mixed5
+    
+    There's also layer index 12, which is the first max pooling layer.
     """
     inception = InceptionV3(
         include_top=False,

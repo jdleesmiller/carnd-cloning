@@ -52,25 +52,31 @@ def run(log, data_dir, cut_index, batch_size=32):
             for column in IMAGE_COLUMNS
         ]
 
-        X_batch = [imread(filename) for filename in filenames]
-        X_batch = np.array(X_batch).astype(np.float32)
-        X_batch = preprocess_input(X_batch)
+        # These are in center_0, center_0_flipped, left_0, left_0_flipped, ...
+        # order.
+        images = [imread(filename) for filename in filenames]
+        images = [im for im in [image, np.fliplr(image)] for image in images]
 
+        X_batch = np.array(images).astype(np.float32)
+        X_batch = preprocess_input(X_batch)
         X_base = base_model.predict(X_batch)
 
-        for prediction in chunks(X_base, len(IMAGE_COLUMNS)):
+        column_names = [
+            name for name in [column_name, 'flipped_' + column_name]
+            for column_name in IMAGE_COLUMNS
+        ]
+
+        for prediction in chunks(X_base, len(column_names)):
             if index % 50 == 0:
                 print('index', index)
             output_pathname = get_bottleneck_pathname(
                 data_dir, cut_index, index)
             np.savez(output_pathname, **{
-                IMAGE_COLUMNS[i]: prediction[i] for i in range(len(prediction))
+                column_names[i]: prediction[i]
+                for i in range(len(prediction))
             })
             log['bottleneck_features'].values[index] = output_pathname
             index += 1
 
     return log
-
-if __name__ == '__main__':
-    run()
 
