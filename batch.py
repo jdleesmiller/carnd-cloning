@@ -14,49 +14,49 @@ def load_bottleneck_files(log):
 def load_bottleneck_features(files, column):
     return np.array([files[index][column] for index in range(len(files))])
 
-def make_batch_data(files, side_camera_bias, flip):
+def make_batch_data(batch, files, label_column, side_camera_bias, flip):
     """
     Generate additional training / validation data by taking the left and right
     camera images and slightly biasing the steering angle. Empirically, a bias
     of about 1.5 degrees (0.06 in model units) seems to work well. Also add
     the flipped image in with the negative steering angle.
     """
-    center_features = load_bottleneck_features(batch_files, 'center_image')
+    center_features = load_bottleneck_features(files, 'center_image')
     center_labels = batch[label_column].values
     features = center_features
     labels = center_labels
 
     if flip:
         flipped_center_features = load_bottleneck_features(
-            batch_files, 'flipped_center_image')
+            files, 'flipped_center_image')
         flipped_center_labels = -center_labels
         features = np.concatenate([features, flipped_center_features])
-        labels = np.concatenate([labels, flipped_center_labels]
+        labels = np.concatenate([labels, flipped_center_labels])
 
     if side_camera_bias is not None:
         left_features = load_bottleneck_features(files, 'left_image')
         left_labels = center_labels + side_camera_bias
         features = np.concatenate([features, left_features])
-        labels = np.concatenate([labels, left_labels]
+        labels = np.concatenate([labels, left_labels])
 
         if flip:
             flipped_left_features = load_bottleneck_features(
                 files, 'flipped_left_image')
             flipped_left_labels = -left_labels
             features = np.concatenate([features, flipped_left_features])
-            labels = np.concatenate([labels, flipped_left_labels]
+            labels = np.concatenate([labels, flipped_left_labels])
 
         right_features = load_bottleneck_features(files, 'right_image')
         right_labels = center_labels - side_camera_bias
         features = np.concatenate([features, right_features])
-        labels = np.concatenate([labels, right_labels]
+        labels = np.concatenate([labels, right_labels])
 
         if flip:
             flipped_right_features = load_bottleneck_features(
                 files, 'flipped_right_image')
             flipped_right_labels = center_labels - side_camera_bias
             features = np.concatenate([features, flipped_right_features])
-            labels = np.concatenate([labels, flipped_right_labels]
+            labels = np.concatenate([labels, flipped_right_labels])
 
     return features, labels
 
@@ -65,13 +65,14 @@ def make_batch(batch, label_column, side_camera_bias, flip):
     Save a complete batch of data for training / validation.
     """
     batch_files = load_bottleneck_files(batch)
-    features, labels = make_extra_data(batch_files, side_camera_bias, flip)
+    features, labels = make_batch_data(
+        batch, batch_files, label_column, side_camera_bias, flip)
     for batch_file in batch_files:
         batch_file.close()
 
     return features, labels
 
-def make_batches(folder, log, batch_size, label_column, side_camera_bias):
+def make_batches(folder, log, batch_size, label_column, side_camera_bias, flip):
     """
     Precompute batches. This means we can't shuffle between epochs,
     but it's much faster to load one batch with one operation than to load
@@ -83,7 +84,8 @@ def make_batches(folder, log, batch_size, label_column, side_camera_bias):
         end = start + batch_size
         batch = log.iloc[start:end]
 
-        features, labels = make_batch(batch, label_column, side_camera_bias)
+        features, labels = make_batch(
+            batch, label_column, side_camera_bias, flip)
         nb_samples += len(labels)
 
         batch_pathname = os.path.join(folder, '%04d.npz' % start)
@@ -130,9 +132,15 @@ def make_train_val_batches(log, key):
         nb_val, batches_val = load_existing_batches(folder_val)
 
         if key['side_camera_bias'] is None:
-            assert nb_val + nb_train == len(log)
+            if key['flip']:
+                assert nb_val + nb_train == 2 * len(log)
+            else:
+                assert nb_val + nb_train == len(log)
         else:
-            assert nb_val + nb_train == 3 * len(log)
+            if key['flip']:
+                assert nb_val + nb_train == 6 * len(log)
+            else:
+                assert nb_val + nb_train == 3 * len(log)
 
         return nb_train, batches_train, nb_val, batches_val
 
