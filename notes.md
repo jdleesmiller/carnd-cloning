@@ -81,3 +81,32 @@ They use 1x1 convolutions to reduce the number of features (channels) in the ima
    That shows that essentially the whole time is the base model prediction.
 - So, trying it out with the first 28 inception layers instead of 44, to see
   whether that still gives OK performance with reduced calculation.
+
+
+cp models/grid_model.batch_size-128.cut_index-12.flip-True.l2_weight-0.01.label_column-smooth_steering_angle_gaussian_3.nb_epoch-30.nb_filter-4.nb_hidden-32.optimizer-adam.side_camera_bias-0.06.version-5.json model.json
+cp models/grid_model.batch_size-128.cut_index-12.flip-True.l2_weight-0.01.label_column-smooth_steering_angle_gaussian_3.nb_epoch-30.nb_filter-4.nb_hidden-32.optimizer-adam.side_camera_bias-0.06.version-5.h5 model.h5
+
+OK; a bit sharp on the turnout and one after 
+
+cp models/grid_model.batch_size-128.cut_index-12.flip-True.l2_weight-0.01.label_column-smooth_steering_angle_gaussian_3.nb_epoch-30.nb_filter-8.nb_hidden-32.optimizer-adam.side_camera_bias-0.06.version-5.json model.json
+cp models/grid_model.batch_size-128.cut_index-12.flip-True.l2_weight-0.01.label_column-smooth_steering_angle_gaussian_3.nb_epoch-30.nb_filter-8.nb_hidden-32.optimizer-adam.side_camera_bias-0.06.version-5.h5 model.h5
+
+OK; made it around a few times and then crashed
+
+cp models/grid_model.batch_size-128.cut_index-12.flip-True.l2_weight-0.01.label_column-smooth_steering_angle_gaussian_3.nb_epoch-30.nb_filter-16.nb_hidden-32.optimizer-adam.side_camera_bias-0.06.version-5.json model.json
+cp models/grid_model.batch_size-128.cut_index-12.flip-True.l2_weight-0.01.label_column-smooth_steering_angle_gaussian_3.nb_epoch-30.nb_filter-16.nb_hidden-32.optimizer-adam.side_camera_bias-0.06.version-5.h5 model.h5
+python drive.py model.json
+
+OK; similar to the above, but it's still not crashed
+
+cp models/grid_model.batch_size-128.cut_index-12.flip-True.l2_weight-0.01.label_column-smooth_steering_angle_gaussian_3.nb_epoch-30.nb_filter-8.nb_hidden-128.optimizer-adam.side_camera_bias-0.06.version-5.json model.json
+cp models/grid_model.batch_size-128.cut_index-12.flip-True.l2_weight-0.01.label_column-smooth_steering_angle_gaussian_3.nb_epoch-30.nb_filter-8.nb_hidden-128.optimizer-adam.side_camera_bias-0.06.version-5.h5 model.h5
+python drive.py model.json
+
+Weaves; crashed into lake
+
+cp models/grid_model.batch_size-128.cut_index-12.flip-True.l2_weight-0.02.label_column-smooth_steering_angle_gaussian_3.nb_epoch-30.nb_filter-16.nb_hidden-32.optimizer-adam.side_camera_bias-0.06.version-5.json model.json
+cp models/grid_model.batch_size-128.cut_index-12.flip-True.l2_weight-0.02.label_column-smooth_steering_angle_gaussian_3.nb_epoch-30.nb_filter-16.nb_hidden-32.optimizer-adam.side_camera_bias-0.06.version-5.h5 model.h5
+python drive.py model.json
+
+Quite successful.
