@@ -56,32 +56,133 @@ Theoretical and biological considerations suggest that sparsity of connections b
 
 They use 1x1 convolutions to reduce the number of features (channels) in the image before applying expensive 3x3 and 5x5 convolutions.
 
-## Resubmission model notes
+## First Submission Model Selection Notes
 
-cp models/grid_model.batch_size-128.cut_index-12.flip-True.l2_weight-0.01.label_column-smooth_steering_angle_gaussian_3.nb_epoch-30.nb_filter-4.nb_hidden-32.optimizer-adam.side_camera_bias-0.06.version-5.json model.json
-cp models/grid_model.batch_size-128.cut_index-12.flip-True.l2_weight-0.01.label_column-smooth_steering_angle_gaussian_3.nb_epoch-30.nb_filter-4.nb_hidden-32.optimizer-adam.side_camera_bias-0.06.version-5.h5 model.h5
+```
+# The ones with lowest MAE show a lot of weave.
 
-OK; a bit sharp on the turnout and one after 
+# {'version': 5, 'nb_hidden': 32, 'side_camera_bias': 0.06, 'nb_filter': 16, 'l2_weight': 0.005, 'batch_size': 128, 'label_column': 'smooth_steering_angle_gaussian_3', 'nb_epoch': 30, 'optimizer': 'adam'} 0.0486434253 30
+# {'version': 5, 'nb_hidden': 32, 'side_camera_bias': 0.06, 'batch_size': 128, 'l2_weight': 0.005, 'nb_filter': 4, 'label_column': 'smooth_steering_angle_gaussian_3', 'nb_epoch': 30, 'optimizer': 'adam'} 0.0497479700963 14
+# {'version': 5, 'nb_hidden': 32, 'side_camera_bias': 0.06, 'batch_size': 128, 'l2_weight': 0.005, 'nb_filter': 8, 'label_column': 'smooth_steering_angle_gaussian_3', 'nb_epoch': 30, 'optimizer': 'adam'} 0.0505109161774 15
+# {'version': 5, 'nb_hidden': 32, 'side_camera_bias': 0.06, 'batch_size': 128, 'l2_weight': 0.005, 'nb_filter': 64, 'label_column': 'smooth_steering_angle_gaussian_3', 'nb_epoch': 30, 'optimizer': 'adam'} 0.0506108435425 25
 
-cp models/grid_model.batch_size-128.cut_index-12.flip-True.l2_weight-0.01.label_column-smooth_steering_angle_gaussian_3.nb_epoch-30.nb_filter-8.nb_hidden-32.optimizer-adam.side_camera_bias-0.06.version-5.json model.json
-cp models/grid_model.batch_size-128.cut_index-12.flip-True.l2_weight-0.01.label_column-smooth_steering_angle_gaussian_3.nb_epoch-30.nb_filter-8.nb_hidden-32.optimizer-adam.side_camera_bias-0.06.version-5.h5 model.h5
+# PASS... but failed when double checked
+# {'version': 5, 'nb_hidden': 128, 'side_camera_bias': 0.06, 'batch_size': 128, 'l2_weight': 0.005, 'nb_filter': 32, 'label_column': 'smooth_steering_angle_gaussian_3', 'nb_epoch': 30, 'optimizer': 'adam'} 0.0633698049717 6
 
-OK; made it around a few times and then crashed
+# PASS: a bit of weave early on, but recovered
+# {'nb_filter': 16, 'nb_epoch': 30, 'nb_hidden': 32, 'side_camera_bias': 0.06, 'version': 5, 'optimizer': 'adam', 'batch_size': 128, 'label_column': 'smooth_steering_angle_gaussian_3', 'l2_weight': 0.02} 0.0603575362906 8
 
-cp models/grid_model.batch_size-128.cut_index-12.flip-True.l2_weight-0.01.label_column-smooth_steering_angle_gaussian_3.nb_epoch-30.nb_filter-16.nb_hidden-32.optimizer-adam.side_camera_bias-0.06.version-5.json model.json
-cp models/grid_model.batch_size-128.cut_index-12.flip-True.l2_weight-0.01.label_column-smooth_steering_angle_gaussian_3.nb_epoch-30.nb_filter-16.nb_hidden-32.optimizer-adam.side_camera_bias-0.06.version-5.h5 model.h5
-python drive.py model.json
+# PASS: a bit tight on the turnout turn and some weave, but pretty good.
+# {'nb_filter': 8, 'nb_epoch': 30, 'nb_hidden': 64, 'side_camera_bias': 0.06, 'version': 5, 'optimizer': 'adam', 'batch_size': 128, 'label_column': 'smooth_steering_angle_gaussian_3', 'l2_weight': 0.02} 0.060572350685 11
 
-OK; similar to the above, but it's still not crashed
+# A bit better but still weaves a lot
+# 'version': 5, 'nb_hidden': 32, 'side_camera_bias': 0.06, 'batch_size': 128, 'l2_weight': 0.01, 'nb_filter': 8, 'label_column': 'smooth_steering_angle_gaussian_3', 'nb_epoch': 30, 'optimizer': 'adam'} 0.0507841391891 30
 
-cp models/grid_model.batch_size-128.cut_index-12.flip-True.l2_weight-0.01.label_column-smooth_steering_angle_gaussian_3.nb_epoch-30.nb_filter-8.nb_hidden-128.optimizer-adam.side_camera_bias-0.06.version-5.json model.json
-cp models/grid_model.batch_size-128.cut_index-12.flip-True.l2_weight-0.01.label_column-smooth_steering_angle_gaussian_3.nb_epoch-30.nb_filter-8.nb_hidden-128.optimizer-adam.side_camera_bias-0.06.version-5.h5 model.h5
-python drive.py model.json
+# Weaves
+# {'version': 5, 'nb_hidden': 64, 'side_camera_bias': 0.06, 'batch_size': 128, 'l2_weight': 0.005, 'nb_filter': 8, 'label_column': 'smooth_steering_angle_gaussian_3', 'nb_epoch': 30, 'optimizer': 'adam'} 0.0520709987096 14
 
-Weaves; crashed into lake
+# Made it to the turnout; pretty stable
+# {'version': 5, 'nb_hidden': 64, 'side_camera_bias': 0.06, 'batch_size': 128, 'l2_weight': 0.005, 'nb_filter': 4, 'label_column': 'smooth_steering_angle_gaussian_3', 'nb_epoch': 30, 'optimizer': 'adam'} 0.0539738734781 11
 
-cp models/grid_model.batch_size-128.cut_index-12.flip-True.l2_weight-0.02.label_column-smooth_steering_angle_gaussian_3.nb_epoch-30.nb_filter-16.nb_hidden-32.optimizer-adam.side_camera_bias-0.06.version-5.json model.json
-cp models/grid_model.batch_size-128.cut_index-12.flip-True.l2_weight-0.02.label_column-smooth_steering_angle_gaussian_3.nb_epoch-30.nb_filter-16.nb_hidden-32.optimizer-adam.side_camera_bias-0.06.version-5.h5 model.h5
-python drive.py model.json
+# Weaves, but made it almost to the turnout.
+# {'version': 5, 'nb_hidden': 32, 'side_camera_bias': 0.06, 'batch_size': 128, 'l2_weight': 0.01, 'nb_filter': 32, 'label_column': 'smooth_steering_angle_gaussian_3', 'nb_epoch': 30, 'optimizer': 'adam'} 0.0546632729836 11
 
-Quite successful.
+# Weaves
+# {'version': 5, 'nb_hidden': 64, 'side_camera_bias': 0.06, 'batch_size': 128, 'l2_weight': 0.005, 'nb_filter': 64, 'label_column': 'smooth_steering_angle_gaussian_3', 'nb_epoch': 30, 'optimizer': 'adam'} 0.0547469570021 15
+
+# Weaves
+# {'version': 5, 'nb_hidden': 128, 'side_camera_bias': 0.06, 'batch_size': 128, 'l2_weight': 0.005, 'nb_filter': 4, 'label_column': 'smooth_steering_angle_gaussian_3', 'nb_epoch': 30, 'optimizer': 'adam'} 0.0563107190402 11
+
+# Weaves
+# {'version': 5, 'nb_hidden': 64, 'side_camera_bias': 0.06, 'batch_size': 128, 'l2_weight': 0.005, 'nb_filter': 32, 'label_column': 'smooth_steering_angle_gaussian_3', 'nb_epoch': 30, 'optimizer': 'adam'} 0.0564398219643 13
+
+# Weaves
+# {'version': 5, 'nb_hidden': 32, 'side_camera_bias': 0.06, 'batch_size': 128, 'l2_weight': 0.01, 'nb_filter': 64, 'label_column': 'smooth_steering_angle_gaussian_3', 'nb_epoch': 30, 'optimizer': 'adam'} 0.0569417894736 19
+
+# Weaves
+# {'version': 5, 'nb_hidden': 64, 'side_camera_bias': 0.06, 'nb_filter': 16, 'l2_weight': 0.005, 'batch_size': 128, 'label_column': 'smooth_steering_angle_gaussian_3', 'nb_epoch': 30, 'optimizer': 'adam'} 0.0572153125485 12
+
+# Weaves
+# {'version': 5, 'nb_hidden': 128, 'side_camera_bias': 0.06, 'batch_size': 128, 'l2_weight': 0.005, 'nb_filter': 8, 'label_column': 'smooth_steering_angle_gaussian_3', 'nb_epoch': 30, 'optimizer': 'adam'} 0.0572628182225 10
+
+# Made it to the turnout; pretty stable.
+# {'version': 5, 'nb_hidden': 64, 'side_camera_bias': 0.06, 'batch_size': 128, 'l2_weight': 0.01, 'nb_filter': 8, 'label_column': 'smooth_steering_angle_gaussian_3', 'nb_epoch': 30, 'optimizer': 'adam'} 0.057351532648 11
+
+# Weaves
+# {'version': 5, 'nb_hidden': 64, 'side_camera_bias': 0.06, 'batch_size': 128, 'l2_weight': 0.01, 'nb_filter': 4, 'label_column': 'smooth_steering_angle_gaussian_3', 'nb_epoch': 30, 'optimizer': 'adam'} 0.0574356182614 14
+
+# Weaves
+# {'version': 5, 'nb_hidden': 32, 'side_camera_bias': 0.06, 'nb_filter': 16, 'l2_weight': 0.01, 'batch_size': 128, 'label_column': 'smooth_steering_angle_gaussian_3', 'nb_epoch': 30, 'optimizer': 'adam'} 0.0575831151575 10
+
+# Weaves
+# {'version': 5, 'nb_hidden': 128, 'side_camera_bias': 0.06, 'nb_filter': 16, 'l2_weight': 0.005, 'batch_size': 128, 'label_column': 'smooth_steering_angle_gaussian_3', 'nb_epoch': 30, 'optimizer': 'adam'} 0.0576822490848 7
+
+# Weaves
+# {'version': 5, 'nb_hidden': 64, 'side_camera_bias': 0.06, 'nb_filter': 16, 'l2_weight': 0.01, 'batch_size': 128, 'label_column': 'smooth_steering_angle_gaussian_3', 'nb_epoch': 30, 'optimizer': 'adam'} 0.0581040763912 10
+
+# End of bridge, but weaves
+# {'version': 5, 'nb_hidden': 32, 'side_camera_bias': 0.06, 'batch_size': 128, 'l2_weight': 0.01, 'nb_filter': 4, 'label_column': 'smooth_steering_angle_gaussian_3', 'nb_epoch': 30, 'optimizer': 'adam'} 0.0583697665036 8
+
+# Weaves
+# {'version': 5, 'nb_hidden': 32, 'side_camera_bias': 0.06, 'batch_size': 128, 'l2_weight': 0.005, 'nb_filter': 32, 'label_column': 'smooth_steering_angle_gaussian_3', 'nb_epoch': 30, 'optimizer': 'adam'} 0.0585662010462 7
+
+# Weaves
+# {'version': 5, 'nb_hidden': 64, 'side_camera_bias': 0.06, 'batch_size': 128, 'l2_weight': 0.01, 'nb_filter': 64, 'label_column': 'smooth_steering_angle_gaussian_3', 'nb_epoch': 30, 'optimizer': 'adam'} 0.0586640624298 19
+
+# Weaves
+# {'version': 5, 'nb_hidden': 128, 'side_camera_bias': 0.06, 'batch_size': 128, 'l2_weight': 0.01, 'nb_filter': 4, 'label_column': 'smooth_steering_angle_gaussian_3', 'nb_epoch': 30, 'optimizer': 'adam'} 0.0604852065088 11
+
+# Weaves
+# {'version': 5, 'nb_hidden': 64, 'side_camera_bias': 0.06, 'batch_size': 128, 'l2_weight': 0.01, 'nb_filter': 32, 'label_column': 'smooth_steering_angle_gaussian_3', 'nb_epoch': 30, 'optimizer': 'adam'} 0.0624602926608 6
+
+# Some weave, did not turn at turnout.
+# {'nb_filter': 4, 'nb_epoch': 30, 'nb_hidden': 32, 'side_camera_bias': 0.06, 'version': 5, 'optimizer': 'adam', 'batch_size': 128, 'label_column': 'smooth_steering_angle_gaussian_3', 'l2_weight': 0.02} 0.0530055659274 25
+
+# Some weave, did not turn at turnout.
+# {'nb_filter': 16, 'nb_epoch': 30, 'nb_hidden': 128, 'side_camera_bias': 0.06, 'version': 5, 'optimizer': 'adam', 'batch_size': 128, 'label_column': 'smooth_steering_angle_gaussian_3', 'l2_weight': 0.01} 0.0536798351864 30
+
+# Pretty good but hit edge near turnout. Marginal pass.
+# {'nb_filter': 8, 'nb_epoch': 30, 'nb_hidden': 32, 'side_camera_bias': 0.06, 'version': 5, 'optimizer': 'adam', 'batch_size': 128, 'label_column': 'smooth_steering_angle_gaussian_3', 'l2_weight': 0.02} 0.0564248780002 13
+
+# Pretty good, did not turn at turnout.
+# {'nb_filter': 4, 'nb_epoch': 30, 'nb_hidden': 128, 'side_camera_bias': 0.06, 'version': 5, 'optimizer': 'adam', 'batch_size': 128, 'label_column': 'smooth_steering_angle_gaussian_3', 'l2_weight': 0.02} 0.0581461225773 22
+
+# Lost it on the bridge
+# {'nb_filter': 4, 'nb_epoch': 30, 'nb_hidden': 64, 'side_camera_bias': 0.06, 'version': 5, 'optimizer': 'adam', 'batch_size': 128, 'label_column': 'smooth_steering_angle_gaussian_3', 'l2_weight': 0.02} 0.0594900304391 14
+
+# Pretty good, did not turn at turnout.
+# {'nb_filter': 16, 'nb_epoch': 30, 'nb_hidden': 64, 'side_camera_bias': 0.06, 'version': 5, 'optimizer': 'adam', 'batch_size': 128, 'label_column': 'smooth_steering_angle_gaussian_3', 'l2_weight': 0.02} 0.0595571538155 11
+
+# Pretty good, did not turn at turnout.
+# {'nb_filter': 8, 'nb_epoch': 30, 'nb_hidden': 128, 'side_camera_bias': 0.06, 'version': 5, 'optimizer': 'adam', 'batch_size': 128, 'label_column': 'smooth_steering_angle_gaussian_3', 'l2_weight': 0.01} 0.0601387542259 14
+
+# Pretty good, did not turn at turnout.
+# {'nb_filter': 64, 'nb_epoch': 30, 'nb_hidden': 32, 'side_camera_bias': 0.06, 'version': 5, 'optimizer': 'adam', 'batch_size': 128, 'label_column': 'smooth_steering_angle_gaussian_3', 'l2_weight': 0.02} 0.0617620240928 15
+
+# Pretty good, did not turn at turnout.
+# {'nb_filter': 32, 'nb_epoch': 30, 'nb_hidden': 32, 'side_camera_bias': 0.06, 'version': 5, 'optimizer': 'adam', 'batch_size': 128, 'label_column': 'smooth_steering_angle_gaussian_3', 'l2_weight': 0.02} 0.0625045372937 8
+
+# A bit of weave, did not turn at turnout.
+# {'nb_filter': 16, 'nb_epoch': 30, 'nb_hidden': 128, 'side_camera_bias': 0.06, 'version': 5, 'optimizer': 'adam', 'batch_size': 128, 'label_column': 'smooth_steering_angle_gaussian_3', 'l2_weight': 0.02} 0.0627611787279 10
+
+# A bit of weave, did not turn at turnout.
+# {'nb_filter': 32, 'nb_epoch': 30, 'nb_hidden': 128, 'side_camera_bias': 0.06, 'version': 5, 'optimizer': 'adam', 'batch_size': 128, 'label_column': 'smooth_steering_angle_gaussian_3', 'l2_weight': 0.02} 0.0627763003509 16
+
+# A bit of weave, did not turn at turnout.
+# {'nb_filter': 8, 'nb_epoch': 30, 'nb_hidden': 128, 'side_camera_bias': 0.06, 'version': 5, 'optimizer': 'adam', 'batch_size': 128, 'label_column': 'smooth_steering_angle_gaussian_3', 'l2_weight': 0.02} 0.0632025661513 10
+
+# A bit of weave, did not turn at turnout.
+# {'nb_filter': 64, 'nb_epoch': 30, 'nb_hidden': 128, 'side_camera_bias': 0.06, 'version': 5, 'optimizer': 'adam', 'batch_size': 128, 'label_column': 'smooth_steering_angle_gaussian_3', 'l2_weight': 0.01} 0.0632899765945 9
+
+# Pretty good, did not turn at turnout.
+# {'nb_filter': 64, 'nb_epoch': 30, 'nb_hidden': 64, 'side_camera_bias': 0.06, 'version': 5, 'optimizer': 'adam', 'batch_size': 128, 'label_column': 'smooth_steering_angle_gaussian_3', 'l2_weight': 0.02} 0.0649442658476 11
+
+# Weaves.
+# {'nb_filter': 64, 'nb_epoch': 30, 'nb_hidden': 128, 'side_camera_bias': 0.06, 'version': 5, 'optimizer': 'adam', 'batch_size': 128, 'label_column': 'smooth_steering_angle_gaussian_3', 'l2_weight': 0.02} 0.0674919454212 9
+
+# Weaves
+# {'nb_filter': 32, 'nb_epoch': 30, 'nb_hidden': 64, 'side_camera_bias': 0.06, 'version': 5, 'optimizer': 'adam', 'batch_size': 128, 'label_column': 'smooth_steering_angle_gaussian_3', 'l2_weight': 0.02} 0.067675512434 5
+
+# Weaves
+# {'version': 5, 'nb_hidden': 128, 'side_camera_bias': 0.06, 'batch_size': 128, 'l2_weight': 0.005, 'nb_filter': 64, 'label_column': 'smooth_steering_angle_gaussian_3', 'nb_epoch': 30, 'optimizer': 'adam'} 0.0645840176195 9
+```
