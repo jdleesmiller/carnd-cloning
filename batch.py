@@ -54,7 +54,7 @@ def make_batch_data(batch, files, label_column, side_camera_bias, flip):
         if flip:
             flipped_right_features = load_bottleneck_features(
                 files, 'flipped_right_image')
-            flipped_right_labels = center_labels - side_camera_bias
+            flipped_right_labels = -right_labels
             features = np.concatenate([features, flipped_right_features])
             labels = np.concatenate([labels, flipped_right_labels])
 
