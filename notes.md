@@ -186,3 +186,21 @@ They use 1x1 convolutions to reduce the number of features (channels) in the ima
 # Weaves
 # {'version': 5, 'nb_hidden': 128, 'side_camera_bias': 0.06, 'batch_size': 128, 'l2_weight': 0.005, 'nb_filter': 64, 'label_column': 'smooth_steering_angle_gaussian_3', 'nb_epoch': 30, 'optimizer': 'adam'} 0.0645840176195 9
 ```
+
+cp models/grid_model.batch_size-128.cut_index-12.flip-True.l2_weight-0.01.label_column-smooth_steering_angle_gaussian_3.nb_epoch-30.nb_filter-4.nb_hidden-32.optimizer-adam.side_camera_bias-0.06.version-5.json model.json
+cp models/grid_model.batch_size-128.cut_index-12.flip-True.l2_weight-0.01.label_column-smooth_steering_angle_gaussian_3.nb_epoch-30.nb_filter-4.nb_hidden-32.optimizer-adam.side_camera_bias-0.06.version-5.h5 model.h5
+python drive.py model.json
+
+pretty good; worrying veer at turnout
+
+cp models/grid_model.batch_size-128.cut_index-12.flip-True.l2_weight-0.01.label_column-smooth_steering_angle_gaussian_3.nb_epoch-30.nb_filter-8.nb_hidden-32.optimizer-adam.side_camera_bias-0.06.version-5.json model.json
+cp models/grid_model.batch_size-128.cut_index-12.flip-True.l2_weight-0.01.label_column-smooth_steering_angle_gaussian_3.nb_epoch-30.nb_filter-8.nb_hidden-32.optimizer-adam.side_camera_bias-0.06.version-5.h5 model.h5
+python drive.py model.json
+
+hit the bumpers a couple of times but stayed on the track
+
+cp models/grid_model.batch_size-128.cut_index-12.flip-True.l2_weight-0.01.label_column-smooth_steering_angle_gaussian_3.nb_epoch-30.nb_filter-16.nb_hidden-32.optimizer-adam.side_camera_bias-0.06.version-5.json model.json
+cp models/grid_model.batch_size-128.cut_index-12.flip-True.l2_weight-0.01.label_column-smooth_steering_angle_gaussian_3.nb_epoch-30.nb_filter-16.nb_hidden-32.optimizer-adam.side_camera_bias-0.06.version-5.h5 model.h5
+python drive.py model.json
+
+pretty good; no issues after about 10 loops
