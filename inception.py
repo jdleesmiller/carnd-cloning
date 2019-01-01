@@ -4,6 +4,12 @@ from keras.applications.inception_v3 import InceptionV3
 
 from common import *
 
+def make_full_model():
+    return InceptionV3(
+        include_top=False,
+        weights='imagenet',
+        input_tensor=Input(shape=IMAGE_SHAPE))
+
 def make_cut_model(cut_index):
     """
     Return the first part of the Inception model. Running the whole inception
@@ -18,13 +24,10 @@ def make_cut_model(cut_index):
     70 mixed3
     92 mixed4
     114 mixed5
-    
+
     There's also layer index 12, which is the first max pooling layer.
     """
-    inception = InceptionV3(
-        include_top=False,
-        weights='imagenet',
-        input_tensor=Input(shape=IMAGE_SHAPE))
+    inception = make_full_model()
     return Model(
         input=inception.input,
         output=inception.layers[cut_index].output)
